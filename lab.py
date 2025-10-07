@@ -32,11 +32,8 @@ def compound_ingredient_possibilities(recipes_db):
     dict = {}
     for food in recipes_db:
         if food[0] == "compound":
-            dict[food[1]] = []
-
-    for food in recipes_db:
-        if food[0] == "compound":
-            dict[food[1]].append(food[2])
+            if food[1] in dict.keys(): dict[food[1]].append(food[2])
+            else: dict[food[1]] = [food[2]]
             
     return dict
 
@@ -209,11 +206,18 @@ def all_flat_recipes(recipes_db, food_name, avoid = None):
         else:
             return []
     
+    memory = {}
+
     output = []
     for recipe in compound_db[food_name]:
         nested_recipe = []
         for ingredient in recipe:
-            nested_recipe.append([scaled_recipe(item, ingredient[1]) for item in all_flat_recipes(new_recipes_db, ingredient[0], avoid)])
+            if ingredient[0] in memory.keys():
+                nested_recipe.append([scaled_recipe(item, ingredient[1]) for item in memory[ingredient[0]]])
+            else:
+                past_result = all_flat_recipes(new_recipes_db, ingredient[0], avoid)
+                nested_recipe.append([scaled_recipe(item, ingredient[1]) for item in past_result])
+                memory[ingredient[0]] = past_result
         output.extend(combine_recipes(nested_recipe))
 
     return output
