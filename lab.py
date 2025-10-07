@@ -133,16 +133,13 @@ def cheapest_flat_recipe(recipes_db, food_name, avoid = None):
                 new_recipes_db.remove(food)
     
     compound_db = compound_ingredient_possibilities(new_recipes_db)
+    atomic_db = atomic_ingredient_costs(new_recipes_db)
 
     if food_name not in compound_db.keys():
-        atomic_db = atomic_ingredient_costs(new_recipes_db)
         if food_name in atomic_db.keys():
             return {food_name: 1}
         else:
             return None
-    
-    known_item_lowest_costs = {}
-    curr_min_cost = None
     
     for recipe in compound_db[food_name]:
         recipe_cost = 0
@@ -154,15 +151,14 @@ def cheapest_flat_recipe(recipes_db, food_name, avoid = None):
                 break
             else:
                 list_of_dicts.append(scaled_recipe(past_result, ingredient[1]))
-                past_cost = lowest_cost(new_recipes_db, ingredient[0], avoid)
-                if past_cost == None:
-                    recipe_cost = None
-                    break
-                else:
-                    recipe_cost += past_cost * ingredient[1]
-        if recipe_cost and recipe_cost == lowest_cost(new_recipes_db, food_name, avoid):
-            return add_recipes(list_of_dicts)
 
+        if not recipe_cost == None:
+            recipe_cost = 0
+            flat_recipe = add_recipes(list_of_dicts)
+            for ingredient_name in flat_recipe.keys():
+                recipe_cost += atomic_db[ingredient_name] * flat_recipe[ingredient_name]
+            if recipe_cost == lowest_cost(new_recipes_db, food_name, avoid):
+                return flat_recipe
 
 def combine_recipes(nested_recipes):
     """
