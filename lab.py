@@ -142,7 +142,7 @@ def cheapest_flat_recipe(recipes_db, food_name, avoid = None):
             return None
     
     known_flat_recipes = {}
-
+    low_cost = lowest_cost(new_recipes_db, food_name, avoid)
     for recipe in compound_db[food_name]:
         recipe_cost = 0
         list_of_dicts = []
@@ -163,7 +163,7 @@ def cheapest_flat_recipe(recipes_db, food_name, avoid = None):
             flat_recipe = add_recipes(list_of_dicts)
             for ingredient_name in flat_recipe.keys():
                 recipe_cost += atomic_db[ingredient_name] * flat_recipe[ingredient_name]
-            if recipe_cost == lowest_cost(new_recipes_db, food_name, avoid):
+            if recipe_cost == low_cost:
                 return flat_recipe
 
 def combine_recipes(nested_recipes):
