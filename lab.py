@@ -17,11 +17,11 @@ def atomic_ingredient_costs(recipes_db):
     Given a recipes database, a list containing compound and atomic food tuples,
     make and return a dictionary mapping each atomic food name to its cost.
     """
-    dict = {}
+    output_dict = {}
     for food in recipes_db:
         if food[0] == "atomic":
-            dict[food[1]] = food[2]
-    return dict
+            output_dict[food[1]] = food[2]
+    return output_dict
 
 
 def compound_ingredient_possibilities(recipes_db):
@@ -30,15 +30,15 @@ def compound_ingredient_possibilities(recipes_db):
     make and return a dictionary that maps each compound food name to a
     list of all the ingredient lists associated with that name.
     """
-    dict = {}
+    output_dict = {}
     for food in recipes_db:
         if food[0] == "compound":
-            if food[1] in dict.keys():
-                dict[food[1]].append(food[2])
+            if food[1] in output_dict:
+                output_dict[food[1]].append(food[2])
             else:
-                dict[food[1]] = [food[2]]
+                output_dict[food[1]] = [food[2]]
 
-    return dict
+    return output_dict
 
 
 def lowest_cost(recipes_db, food_name, avoid=None):
@@ -57,9 +57,9 @@ def lowest_cost(recipes_db, food_name, avoid=None):
 
     compound_db = compound_ingredient_possibilities(new_recipes_db)
 
-    if food_name not in compound_db.keys():
+    if food_name not in compound_db:
         atomic_db = atomic_ingredient_costs(new_recipes_db)
-        if food_name in atomic_db.keys():
+        if food_name in atomic_db:
             return atomic_db[food_name]
         else:
             return None
@@ -70,10 +70,10 @@ def lowest_cost(recipes_db, food_name, avoid=None):
     for recipe in compound_db[food_name]:
         recipe_cost = 0
         for ingredient in recipe:
-            if ingredient[0] in known_item_lowest_costs.keys():
+            if ingredient[0] in known_item_lowest_costs:
                 recipe_cost += known_item_lowest_costs[ingredient[0]] * ingredient[1]
             else:
-                if lowest_cost(new_recipes_db, ingredient[0], avoid) == None:
+                if lowest_cost(new_recipes_db, ingredient[0], avoid) is None:
                     recipe_cost = None
                     break
                 known_item_lowest_costs[ingredient[0]] = lowest_cost(
@@ -94,7 +94,7 @@ def scaled_recipe(recipe_dict, n):
     new dictionary with the quantities scaled by n.
     """
     new_dict = {}
-    for key in recipe_dict.keys():
+    for key in recipe_dict:
         new_dict[key] = recipe_dict[key] * n
     return new_dict
 
@@ -111,12 +111,12 @@ def add_recipes(recipe_dicts):
         {'milk':3, 'chocolate': 1, 'sugar': 1}
     """
     new_dict = {}
-    for dict in recipe_dicts:
-        for item in dict.keys():
-            if item in new_dict.keys():
-                new_dict[item] += dict[item]
+    for dictionary in recipe_dicts:
+        for item in dictionary:
+            if item in new_dict:
+                new_dict[item] += dictionary[item]
             else:
-                new_dict[item] = dict[item]
+                new_dict[item] = dictionary[item]
     return new_dict
 
 
@@ -138,8 +138,8 @@ def cheapest_flat_recipe(recipes_db, food_name, avoid=None):
     compound_db = compound_ingredient_possibilities(new_recipes_db)
     atomic_db = atomic_ingredient_costs(new_recipes_db)
 
-    if food_name not in compound_db.keys():
-        if food_name in atomic_db.keys():
+    if food_name not in compound_db:
+        if food_name in atomic_db:
             return {food_name: 1}
         else:
             return None
@@ -150,27 +150,28 @@ def cheapest_flat_recipe(recipes_db, food_name, avoid=None):
         recipe_cost = 0
         list_of_dicts = []
         for ingredient in recipe:
-            if ingredient[0] in known_flat_recipes.keys():
+            if ingredient[0] in known_flat_recipes:
                 list_of_dicts.append(
                     scaled_recipe(known_flat_recipes[ingredient[0]], ingredient[1])
                 )
             else:
                 past_result = cheapest_flat_recipe(new_recipes_db, ingredient[0], avoid)
-                if past_result == None:
+                if past_result is None:
                     recipe_cost = None
                     break
                 else:
                     list_of_dicts.append(scaled_recipe(past_result, ingredient[1]))
                     known_flat_recipes[ingredient[0]] = past_result
 
-        if not recipe_cost == None:
+        if not recipe_cost is None:
             recipe_cost = 0
             flat_recipe = add_recipes(list_of_dicts)
-            for ingredient_name in flat_recipe.keys():
-                recipe_cost += atomic_db[ingredient_name] * flat_recipe[ingredient_name]
+            for ingredient_name, ingredient_quant in flat_recipe.items():
+                recipe_cost += atomic_db[ingredient_name] * ingredient_quant
             if recipe_cost == low_cost:
                 return flat_recipe
-
+            
+    return None
 
 def combine_recipes(nested_recipes):
     """
@@ -209,9 +210,9 @@ def all_flat_recipes(recipes_db, food_name, avoid=None):
 
     compound_db = compound_ingredient_possibilities(new_recipes_db)
 
-    if food_name not in compound_db.keys():
+    if food_name not in compound_db:
         atomic_db = atomic_ingredient_costs(new_recipes_db)
-        if food_name in atomic_db.keys():
+        if food_name in atomic_db:
             return [{food_name: 1}]
         else:
             return []
@@ -222,7 +223,7 @@ def all_flat_recipes(recipes_db, food_name, avoid=None):
     for recipe in compound_db[food_name]:
         nested_recipe = []
         for ingredient in recipe:
-            if ingredient[0] in memory.keys():
+            if ingredient[0] in memory:
                 nested_recipe.append(
                     [
                         scaled_recipe(item, ingredient[1])
@@ -252,13 +253,13 @@ if __name__ == "__main__":
         cookie_recipes_db = pickle.load(f)
 
     # you may add additional testing code here!
-    atomic_db = atomic_ingredient_costs(example_recipes_db)
+    #atomic_db = atomic_ingredient_costs(example_recipes_db)
     # cost = 0
     # for value in atomic_db.values():
     #    cost += value
     # print(cost)
 
-    compound_db = compound_ingredient_possibilities(example_recipes_db)
+    #compound_db = compound_ingredient_possibilities(example_recipes_db)
     # count = 0
     # for key in compound_db.keys():
     #     count += len(compound_db[key]) - 1
@@ -268,7 +269,7 @@ if __name__ == "__main__":
     # print(all_flat_recipes(cookie_recipes_db, 'sugar'))
     # print(all_flat_recipes(cookie_recipes_db, 'cookie sandwich', ('cookie',)))
 
-    cake_recipes = [{"cake": 1}, {"gluten free cake": 1}]
-    icing_recipes = [{"vanilla icing": 1}, {"cream cheese icing": 1}]
-    topping_recipes = [{"sprinkles": 20}]
-    print(combine_recipes([cake_recipes, icing_recipes, topping_recipes]))
+    #cake_recipes = [{"cake": 1}, {"gluten free cake": 1}]
+    #icing_recipes = [{"vanilla icing": 1}, {"cream cheese icing": 1}]
+    #topping_recipes = [{"sprinkles": 20}]
+    #print(combine_recipes([cake_recipes, icing_recipes, topping_recipes]))
