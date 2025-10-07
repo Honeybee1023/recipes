@@ -141,16 +141,22 @@ def cheapest_flat_recipe(recipes_db, food_name, avoid = None):
         else:
             return None
     
+    known_flat_recipes = {}
+
     for recipe in compound_db[food_name]:
         recipe_cost = 0
         list_of_dicts = []
         for ingredient in recipe:
-            past_result = cheapest_flat_recipe(new_recipes_db, ingredient[0], avoid)
-            if past_result == None:
-                recipe_cost = None
-                break
+            if ingredient[0] in known_flat_recipes.keys():
+                list_of_dicts.append(scaled_recipe(known_flat_recipes[ingredient[0]], ingredient[1]))
             else:
-                list_of_dicts.append(scaled_recipe(past_result, ingredient[1]))
+                past_result = cheapest_flat_recipe(new_recipes_db, ingredient[0], avoid)
+                if past_result == None:
+                    recipe_cost = None
+                    break
+                else:
+                    list_of_dicts.append(scaled_recipe(past_result, ingredient[1]))
+                    known_flat_recipes[ingredient[0]] = past_result
 
         if not recipe_cost == None:
             recipe_cost = 0
