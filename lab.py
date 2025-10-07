@@ -55,14 +55,14 @@ def lowest_cost(recipes_db, food_name, avoid=None):
             if food[1] in set(avoid):
                 new_recipes_db.remove(food)
 
-    atomic_db = atomic_ingredient_costs(new_recipes_db)
     compound_db = compound_ingredient_possibilities(new_recipes_db)
 
-    if food_name not in atomic_db.keys() and food_name not in compound_db.keys():
-        return None
-    
-    if food_name in atomic_db.keys():
-        return atomic_db[food_name]
+    if food_name not in compound_db.keys():
+        atomic_db = atomic_ingredient_costs(new_recipes_db)
+        if food_name in atomic_db.keys():
+            return atomic_db[food_name]
+        else:
+            return None
     
     known_item_lowest_costs = {}
     curr_min_cost = None
@@ -132,14 +132,14 @@ def cheapest_flat_recipe(recipes_db, food_name, avoid = None):
             if food[1] in set(avoid):
                 new_recipes_db.remove(food)
     
-    atomic_db = atomic_ingredient_costs(new_recipes_db)
     compound_db = compound_ingredient_possibilities(new_recipes_db)
 
-    if food_name not in atomic_db.keys() and food_name not in compound_db.keys():
-        return None
-    
-    if food_name in atomic_db.keys():
-        return {food_name: 1}
+    if food_name not in compound_db.keys():
+        atomic_db = atomic_ingredient_costs(new_recipes_db)
+        if food_name in atomic_db.keys():
+            return {food_name: 1}
+        else:
+            return None
     
     known_item_lowest_costs = {}
     curr_min_cost = None
@@ -198,14 +198,14 @@ def all_flat_recipes(recipes_db, food_name, avoid = None):
             if food[1] in set(avoid):
                 new_recipes_db.remove(food)
     
-    atomic_db = atomic_ingredient_costs(new_recipes_db)
     compound_db = compound_ingredient_possibilities(new_recipes_db)
 
-    if food_name not in atomic_db.keys() and food_name not in compound_db.keys():
-        return []
-    
-    if food_name in atomic_db.keys():
-        return [{food_name: 1}]
+    if food_name not in compound_db.keys():
+        atomic_db = atomic_ingredient_costs(new_recipes_db)
+        if food_name in atomic_db.keys():
+            return [{food_name: 1}]
+        else:
+            return []
     
     output = []
     for recipe in compound_db[food_name]:
